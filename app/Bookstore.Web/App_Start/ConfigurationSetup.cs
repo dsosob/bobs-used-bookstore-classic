@@ -1,14 +1,17 @@
-﻿using Amazon.SimpleSystemsManagement;
+using Amazon.SimpleSystemsManagement;
 using Amazon.SimpleSystemsManagement.Model;
 using BobsBookstoreClassic.Data;
 using Bookstore.Common;
+using Microsoft.Extensions.Configuration;
 
 namespace Bookstore.Web
 {
     public static class ConfigurationSetup
     {
-        public static void ConfigureConfiguration()
+        public static void ConfigureConfiguration(IConfiguration configuration)
         {
+            BookstoreConfiguration.Initialize(configuration);
+
             var rootPath = "/" + Constants.AppName;
 
             const string databasePath = "/Database";
@@ -16,23 +19,23 @@ namespace Bookstore.Web
             const string fileServicePath = "/Files";
 
 
-            if (BookstoreConfiguration.GetSetting("Services/Database") == "aws")
+            if (BookstoreConfiguration.GetSetting("Services:Database") == "aws")
             {
                 using (var client = new AmazonSimpleSystemsManagementClient())
                 {
                     var request = new GetParameterRequest { Name = $"{rootPath}{databasePath}/ConnectionStrings/BookstoreDatabaseConnection" };
-                    var response = client.GetParameter(request);
+                    var response = client.GetParameterAsync(request).Result;
 
                     BookstoreConfiguration.AddSetting(response.Parameter.Name.Replace($"{rootPath}{databasePath}/", string.Empty), response.Parameter.Value);
                 }
             }
 
-            if (BookstoreConfiguration.GetSetting("Services/Authentication") == "aws")
+            if (BookstoreConfiguration.GetSetting("Services:Authentication") == "aws")
             {
                 using (var client = new AmazonSimpleSystemsManagementClient())
                 {
                     var request = new GetParametersByPathRequest { Path = $"{rootPath}{authenticationPath}/", Recursive = true };
-                    var response = client.GetParametersByPath(request);
+                    var response = client.GetParametersByPathAsync(request).Result;
 
                     foreach (var parameter in response.Parameters)
                     {
@@ -41,12 +44,12 @@ namespace Bookstore.Web
                 }
             }
 
-            if (BookstoreConfiguration.GetSetting("Services/FileService") == "aws")
+            if (BookstoreConfiguration.GetSetting("Services:FileService") == "aws")
             {
                 using (var client = new AmazonSimpleSystemsManagementClient())
                 {
                     var request = new GetParametersByPathRequest { Path = $"{rootPath}{fileServicePath}/", Recursive = true };
-                    var response = client.GetParametersByPath(request);
+                    var response = client.GetParametersByPathAsync(request).Result;
 
                     foreach (var parameter in response.Parameters)
                     {
@@ -54,6 +57,16 @@ namespace Bookstore.Web
                     }
                 }
             }
+        }
+
+        public static string GetConnectionString(IConfiguration configuration)
+        {
+            var connectionString = BookstoreConfiguration.GetConnectionString("BookstoreDatabaseConnection");
+            if (string.IsNullOrEmpty(connectionString))
+            {
+                connectionString = configuration.GetConnectionString("BookstoreDatabaseConnection");
+            }
+            return connectionString;
         }
     }
 }
