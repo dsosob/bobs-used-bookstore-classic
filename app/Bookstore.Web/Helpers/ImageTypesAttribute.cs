@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http;
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.IO;
@@ -19,7 +20,7 @@ namespace Bookstore.Web.Helpers
         {
             if (value == null) return true;
 
-            if (!(value is HttpPostedFileBase file)) return base.IsValid(value);
+            if (!(value is IFormFile file)) return base.IsValid(value);
 
             var extension = Path.GetExtension(file.FileName);
 

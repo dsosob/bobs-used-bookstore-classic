@@ -1,13 +1,15 @@
-﻿using Bookstore.Domain.Books;
+using Bookstore.Domain.Books;
 using Bookstore.Domain.ReferenceData;
 using System.Collections.Generic;
-using System.Data.Entity;
+using Microsoft.EntityFrameworkCore;
 
 namespace Bookstore.Data
 {
-    public class BookstoreDbInitializer : DropCreateDatabaseIfModelChanges<ApplicationDbContext>
+    // EF Core doesn't use database initializers like EF6
+    // This functionality should be moved to a migration or seed method
+    public class BookstoreDbInitializer
     {
-        protected override void Seed(ApplicationDbContext context)
+        public static void Seed(ApplicationDbContext context)
         {
             var referenceDataItems = new List<ReferenceDataItem> {
                 new ReferenceDataItem(ReferenceDataType.BookType, "Hardcover") { Id = 1 },

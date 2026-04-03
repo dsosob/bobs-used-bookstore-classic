@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http;
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Web;
 
@@ -16,9 +17,9 @@ namespace Bookstore.Web.Helpers
         {
             if (value == null) return true;
 
-            if (!(value is HttpPostedFileBase file)) return base.IsValid(value);
+            if (!(value is IFormFile file)) return base.IsValid(value);
 
-            return file.ContentLength <= maxFileSize;
+            return file.Length <= maxFileSize;
         }
 
         public override string FormatErrorMessage(string name)
